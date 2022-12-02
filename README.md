@@ -10,9 +10,9 @@
 
 1.  All necessary steps followed, as mentioned in [axelar-local-gmp-examples](https://github.com/axelarnetwork/axelar-local-gmp-examples) repository. Action taking in this step is
 
-    -   Executed "`git clone https://github.com/axelarnetwork/axelar-local-gmp-examples.git`" to clone the repository.
-    -   Executed "`npm ci`" to install all dependency
-    -   Executed "`cp .env.example .env`" and add private-key details in `.env` file.
+    -   Executed `git clone https://github.com/axelarnetwork/axelar-local-gmp-examples.git` to clone the repository.
+    -   Executed `npm ci` to install all dependency
+    -   Executed `cp .env.example .env` and add private-key details in `.env` file.
 
 2.  Updated `/examples/call-contract-with-token/DistributionExecutable.sol`.
 
@@ -99,18 +99,53 @@
 
 4.  Testing was done on local env
 
-    -   Executed "`node scripts/createLocal.js`" to start local node and keep that command running on terminal.
-    -   Executed "`node scripts/deploy.js examples/call-contract-with-token local`" to deploy **DistributionExecutable** contract on local node.
-    -   Executed "`node scripts/test examples/call-contract-with-token local "Polygon" "Avalanche" 100 0x438d67e825D31D4a9910241074025B75b08470e1,0x57E2355F3CD8CB932952e773a5C57b64cE692e76 "Hello World"`" to transfer 100 aUSDC to `two different accounts` from `Polygon` to `Avalanche`. Amount will be divided equally among recipients.
+    -   Executed `node scripts/createLocal.js` to start local node and keep that command running on terminal.
+    -   Executed `node scripts/deploy.js examples/call-contract-with-token local` to deploy **DistributionExecutable** contract on local node.
+    -   Executed `node scripts/test examples/call-contract-with-token local "Polygon" "Avalanche" 100 0x438d67e825D31D4a9910241074025B75b08470e1,0x57E2355F3CD8CB932952e773a5C57b64cE692e76 "Hello World"` to transfer 100 aUSDC to `two different accounts` from `Polygon` to `Avalanche`. Amount will be divided equally among recipients.
 
-    image upload pending
+    ![image](https://user-images.githubusercontent.com/56193257/205261853-cd10108e-441f-4318-95ce-4939cc9a8348.png)
 
 5.  Finally, after all testing was done, deployment and execution was done on testnet.
 
-    -   Executed "`node scripts/deploy.js examples/call-contract-with-token testnet`" to deploy **DistributionExecutable** contract on local node. It will also update `/info/testnet.json` with correct **DistributionExecutable** address.
-    -   Executed "`node scripts/test examples/call-contract-with-token testnet "Polygon" "Avalanche" 1 0x438d67e825D31D4a9910241074025B75b08470e1,0x57E2355F3CD8CB932952e773a5C57b64cE692e76 "Hello World"`" to transfer 1 aUSDC to `two different accounts` from `Polygon` to `Avalanche`. Amount will be divided equally among recipients.
+    -   Executed `node scripts/deploy.js examples/call-contract-with-token testnet` to deploy **DistributionExecutable** contract on local node. It will also update `/info/testnet.json` with correct **DistributionExecutable** address.
+    -   Executed `node scripts/test examples/call-contract-with-token testnet "Polygon" "Avalanche" 1 0x438d67e825D31D4a9910241074025B75b08470e1,0x57E2355F3CD8CB932952e773a5C57b64cE692e76 "Hello World"` to transfer 1 aUSDC to `two different accounts` from `Polygon` to `Avalanche`. Amount will be divided equally among recipients.
 
-    image upload pending
+    ```bash
+        $ node scripts/test examples/call-contract-with-token testnet "Polygon" "Avalanche" 1 0x438d67e825D31D4a9910241074025B75b08470e1,0x57E2355F3CD8CB932952e773a5C57b64cE692e76 "Hello World"
+
+        --- Initially ---
+        Source : 0x3B70368d0FEEbb7c3B32551b82E499c777e76c22 has 12.7 aUSDC
+        Destination 1: 0x438d67e825D31D4a9910241074025B75b08470e1 has 4.5 aUSDC
+        Destination 2: 0x57E2355F3CD8CB932952e773a5C57b64cE692e76 has 0.5 aUSDC
+        Transaction Hash : 0xed3b2d4ffd826b507f31d942c94774a8ca3b8c39529bf7c2be9031e9adc0769c
+
+        --- Waiting Period Started ---
+        Waited for 13 minutes
+        --- After ---
+        Source(After Transaction) : 0x3B70368d0FEEbb7c3B32551b82E499c777e76c22 has 11.7 aUSDC
+
+        ------------For Account 0x438d67e825D31D4a9910241074025B75b08470e1------------
+        Destination(Before Transaction) 1 : 0x438d67e825D31D4a9910241074025B75b08470e1 has 4.5 aUSDC
+        Destination(After Transaction) 1: 0x438d67e825D31D4a9910241074025B75b08470e1 has 5 aUSDC
+                Details of TransactionInfo
+                ---------------------------
+                Sender           : 0x3B70368d0FEEbb7c3B32551b82E499c777e76c22
+                TokenAddress     : 0x57F1c63497AEe0bE305B8852b354CEc793da43bB
+                Amount           : 0.5
+                Message          : Hello World
+
+        ------------For Account 0x57E2355F3CD8CB932952e773a5C57b64cE692e76------------
+        Destination(Before Transaction) 2 : 0x57E2355F3CD8CB932952e773a5C57b64cE692e76 has 0.5 aUSDC
+        Destination(After Transaction) 2: 0x57E2355F3CD8CB932952e773a5C57b64cE692e76 has 1 aUSDC
+                Details of TransactionInfo
+                ---------------------------
+                Sender           : 0x3B70368d0FEEbb7c3B32551b82E499c777e76c22
+                TokenAddress     : 0x57F1c63497AEe0bE305B8852b354CEc793da43bB
+                Amount           : 0.5
+                Message          : Hello World
+
+    ```
+   ![image](https://user-images.githubusercontent.com/56193257/205265294-e515b7cf-ab1d-41ea-a4ef-a642f9de81c4.png)
 
 ## Challenges Faced
 
