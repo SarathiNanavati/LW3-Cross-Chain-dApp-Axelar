@@ -4,7 +4,7 @@
 
 -   DistributionExecutable Contract Address on Polygon Testnet : [0x57A757ceCaF2E8Eb8BD3a2B67e9c4a724137CB8D](https://mumbai.polygonscan.com/address/0x57A757ceCaF2E8Eb8BD3a2B67e9c4a724137CB8D)
 -   DistributionExecutable Contract Address on Avalanche Testnet : [0xAe9ce94c7eBb3cF22A06470d06D84Cb7Ce7c55E5](https://testnet.snowtrace.io/address/0xAe9ce94c7eBb3cF22A06470d06D84Cb7Ce7c55E5)
--   Axelar Transaction Detail on Testnet : [](https://testnet.axelarscan.io/gmp/0xed3b2d4ffd826b507f31d942c94774a8ca3b8c39529bf7c2be9031e9adc0769c:96)
+-   Axelar Transaction Detail on Testnet : [0xed3b2d4ffd826b507f31d942c94774a8ca3b8c39529bf7c2be9031e9adc0769c](https://testnet.axelarscan.io/gmp/0xed3b2d4ffd826b507f31d942c94774a8ca3b8c39529bf7c2be9031e9adc0769c:96)
 
 ## Followed Steps
 
@@ -145,7 +145,8 @@
                 Message          : Hello World
 
     ```
-   ![image](https://user-images.githubusercontent.com/56193257/205265294-e515b7cf-ab1d-41ea-a4ef-a642f9de81c4.png)
+
+    ![image](https://user-images.githubusercontent.com/56193257/205265294-e515b7cf-ab1d-41ea-a4ef-a642f9de81c4.png)
 
 ## Challenges Faced
 
