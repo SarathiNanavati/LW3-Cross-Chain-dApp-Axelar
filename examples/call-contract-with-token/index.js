@@ -4,6 +4,8 @@ const {
     getDefaultProvider,
     Contract,
     constants: { AddressZero },
+    utils,
+    BigNumber,
 } = require('ethers');
 const {
     utils: { deployContract },
@@ -27,7 +29,8 @@ async function test(chains, wallet, options) {
     const source = chains.find((chain) => chain.name === (args[0] || 'Avalanche'));
     const destination = chains.find((chain) => chain.name === (args[1] || 'Fantom'));
     const amount = Math.floor(parseFloat(args[2])) * 1e6 || 10e6;
-    const accounts = args.slice(3);
+    const accounts = options.args[3].split(',');
+    const message = options.args[4];
 
     if (accounts.length === 0) accounts.push(wallet.address);
 
@@ -40,34 +43,88 @@ async function test(chains, wallet, options) {
         chain.usdc = new Contract(usdcAddress, IERC20.abi, chain.wallet);
     }
 
+    let balances = [];
+
     async function logAccountBalances() {
+        console.log(`Source : ${wallet.address} has ${(await source.usdc.balanceOf(wallet.address)) / 1e6} aUSDC`);
+        let i = 0;
+
         for (const account of accounts) {
-            console.log(`${account} has ${(await destination.usdc.balanceOf(account)) / 1e6} aUSDC`);
+            const destinationAccountBal = await destination.usdc.balanceOf(account);
+            console.log(`Destination ${i + 1}: ${account} has ${destinationAccountBal / 1e6} aUSDC`);
+            balances.push(destinationAccountBal / 1e6);
+            i++;
         }
     }
 
-    console.log('--- Initially ---');
+    async function matchandLogAccountBalances() {
+        console.log(`Source(After Transaction) : ${wallet.address} has ${(await source.usdc.balanceOf(wallet.address)) / 1e6} aUSDC`);
+        let i = 0;
+        for (const account of accounts) {
+            console.log(`\n------------For Account ${account}------------`);
+            const destinationAccountBal = await destination.usdc.balanceOf(account);
+            console.log(`Destination(Before Transaction) ${i + 1} : ${account} has ${balances[i]} aUSDC`);
+            console.log(`Destination(After Transaction) ${i + 1}: ${account} has ${destinationAccountBal / 1e6} aUSDC`);
+
+            console.log(`\tDetails of TransactionInfo `);
+            console.log('\t---------------------------');
+            const recipientsCount = (await destination.contract.recipientsTransactionCounter(account)).toNumber();
+            for (let count = 0; count < recipientsCount; count++) {
+                const transactionInfo = await destination.contract.recipientsToTransactions(account, count);
+                console.log(`\tSender\t\t : ${transactionInfo.sender}`);
+                console.log(`\tTokenAddress\t : ${transactionInfo.tokenAddress}`);
+                console.log(`\tAmount\t\t : ${transactionInfo.amount.toNumber() / 1e6}`);
+                console.log(`\tMessage\t\t : ${transactionInfo.message}`);
+            }
+            i++;
+        }
+    }
+
+    console.log('\n--- Initially ---');
     await logAccountBalances();
 
     const gasLimit = 3e6;
     const gasPrice = await getGasPrice(source, destination, AddressZero);
 
-    const balance = BigInt(await destination.usdc.balanceOf(accounts[0]));
-
     const approveTx = await source.usdc.approve(source.contract.address, amount);
     await approveTx.wait();
 
-    const sendTx = await source.contract.sendToMany(destination.name, destination.distributionExecutable, accounts, 'aUSDC', amount, {
-        value: BigInt(Math.floor(gasLimit * gasPrice)),
-    });
-    await sendTx.wait();
+    const sendTx = await source.contract.sendToMany(
+        destination.name,
+        destination.distributionExecutable,
+        accounts,
+        'aUSDC',
+        amount,
+        message,
+        {
+            value: BigInt(Math.floor(gasLimit * gasPrice)),
+        },
+    );
+    await sendTx.wait(1);
+    console.log(`Transaction Hash : ${sendTx.hash}`);
+    console.log('\n--- Waiting Period Started ---');
+    let allBalancesMatched = false;
+    let waitTimeInMin = 0;
+    while (!allBalancesMatched) {
+        let i = 0;
+        let pendingMatch = false;
 
-    while (BigInt(await destination.usdc.balanceOf(accounts[0])) === balance) {
-        await sleep(2000);
+        await sleep(60000);
+        waitTimeInMin++;
+        process.stdout.write(`\rWaited for ${waitTimeInMin} minutes`);
+
+        for (const account of accounts) {
+            const accountBalance = (await destination.usdc.balanceOf(account)) / 1e6;
+            if (accountBalance == balances[i]) {
+                pendingMatch = true;
+            }
+            i++;
+        }
+        allBalancesMatched = !pendingMatch;
     }
 
-    console.log('--- After ---');
-    await logAccountBalances();
+    console.log('\n--- After ---');
+    await matchandLogAccountBalances();
 }
 
 module.exports = {

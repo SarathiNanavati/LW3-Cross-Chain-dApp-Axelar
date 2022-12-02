@@ -9,6 +9,16 @@ import { IAxelarGasService } from '@axelar-network/axelar-gmp-sdk-solidity/contr
 contract DistributionExecutable is AxelarExecutable {
     IAxelarGasService public immutable gasReceiver;
 
+    struct TransactionInfo {
+        address sender;
+        address tokenAddress;
+        uint256 amount;
+        string message;
+    }
+
+    mapping(address => TransactionInfo[]) public recipientsToTransactions;
+    mapping(address => uint) public recipientsTransactionCounter;
+
     constructor(address gateway_, address gasReceiver_) AxelarExecutable(gateway_) {
         gasReceiver = IAxelarGasService(gasReceiver_);
     }
@@ -18,12 +28,13 @@ contract DistributionExecutable is AxelarExecutable {
         string memory destinationAddress,
         address[] calldata destinationAddresses,
         string memory symbol,
-        uint256 amount
+        uint256 amount,
+        string memory message //   <---- Added paramter for message
     ) external payable {
         address tokenAddress = gateway.tokenAddresses(symbol);
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
         IERC20(tokenAddress).approve(address(gateway), amount);
-        bytes memory payload = abi.encode(destinationAddresses);
+        bytes memory payload = abi.encode(destinationAddresses, message, msg.sender); //  <-- Included message and sender details in
         if (msg.value > 0) {
             gasReceiver.payNativeGasForContractCallWithToken{ value: msg.value }(
                 address(this),
@@ -45,12 +56,14 @@ contract DistributionExecutable is AxelarExecutable {
         string calldata tokenSymbol,
         uint256 amount
     ) internal override {
-        address[] memory recipients = abi.decode(payload, (address[]));
+        (address[] memory recipients, string memory message, address sender) = abi.decode(payload, (address[], string, address)); // <-- updated decode types to accomodate message and sender
         address tokenAddress = gateway.tokenAddresses(tokenSymbol);
-
         uint256 sentAmount = amount / recipients.length;
         for (uint256 i = 0; i < recipients.length; i++) {
             IERC20(tokenAddress).transfer(recipients[i], sentAmount);
+            TransactionInfo memory txnInfo = TransactionInfo(sender, tokenAddress, sentAmount, message); // Creating transactionInfo
+            recipientsToTransactions[recipients[i]].push(txnInfo); //   <--- Storing TransactionInfo for that recipient
+            recipientsTransactionCounter[recipients[i]]++; //   <--- Incrementing recipient counter
         }
     }
 }
