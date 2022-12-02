@@ -1,6 +1,8 @@
-# Axelar cross-chain dApp examples
+# LW3 Axelar cross-chain dApp examples
 
-## Introduction
+## Requested Links/Details
+
+-
 
 This repo provides the code for several example dApps in the [Axelar Local Development Environment](https://github.com/axelarnetwork/axelar-local-dev). Examples contain both JavaScript and Solidity smart contract code.
 
